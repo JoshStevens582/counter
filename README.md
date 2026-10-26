@@ -2,7 +2,7 @@
 
 Customer website chat for **Custom Chat and Automation**. Visitors ask without logging in. Answers come from approved pages (prices, hours, services). If the pages do not say it, Counter says it does not know. Counter does not book or send mail.
 
-**Live (after deploy):** `https://counter.customchatandautomation.co.za`
+**Live:** [counter.customchatandautomation.co.za](https://counter.customchatandautomation.co.za) — sample clinic site + pitch strip (“How this works on your client’s site”).
 
 ## Demo script (2 minutes)
 

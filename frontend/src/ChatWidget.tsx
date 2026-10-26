@@ -23,10 +23,7 @@ export function ChatWidget({ open, onToggle }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const historyForApi = useMemo(
-    () => turns.slice(-12),
-    [turns],
-  );
+  const historyForApi = useMemo(() => turns.slice(-12), [turns]);
 
   async function sendMessage(text: string) {
     const cleaned = text.trim();
@@ -73,27 +70,42 @@ export function ChatWidget({ open, onToggle }: Props) {
 
   return (
     <>
-      <button
-        type="button"
-        className="chat-launcher"
-        onClick={onToggle}
-        aria-expanded={open}
-      >
-        {open ? "Close chat" : "Ask us anything"}
-      </button>
+      {!open ? (
+        <button
+          type="button"
+          className="chat-fab"
+          onClick={onToggle}
+          aria-expanded={false}
+          aria-label="Open chat"
+        >
+          <span className="chat-fab-icon" aria-hidden="true" />
+          <span className="chat-fab-label">Chat</span>
+        </button>
+      ) : null}
       {open ? (
-        <section className="chat-panel" aria-label="Counter customer chat">
+        <section className="chat-panel" aria-label="Website chat">
           <header className="chat-header">
-            <div>
-              <strong>Ask the firm</strong>
-              <p>Demo chat — answers from published pages only. No login.</p>
+            <div className="chat-header-text">
+              <strong>Cape Town Physio</strong>
+              <p>Answers from our published fees, hours &amp; services</p>
             </div>
+            <button
+              type="button"
+              className="chat-close"
+              onClick={onToggle}
+              aria-label="Close chat"
+            >
+              ×
+            </button>
           </header>
           <div className="chat-messages">
             {turns.length === 0 ? (
-              <p className="chat-hint">
-                Try a question about fees, hours, or what we offer.
-              </p>
+              <div className="chat-welcome">
+                <p>
+                  Hi — ask about session fees, opening hours, or what we offer.
+                  We show which page each answer comes from.
+                </p>
+              </div>
             ) : null}
             {turns.map((turn, index) => (
               <div
@@ -107,12 +119,12 @@ export function ChatWidget({ open, onToggle }: Props) {
                 )}
               </div>
             ))}
-            {busy ? <p className="chat-status">Thinking…</p> : null}
+            {busy ? <p className="chat-status">Typing…</p> : null}
             {error ? <p className="chat-error">{error}</p> : null}
           </div>
           {sources.length > 0 ? (
             <aside className="chat-sources">
-              <h3>Pages used</h3>
+              <h3>Source on this site</h3>
               {sources.map((chunk) => (
                 <article
                   key={`${chunk.document_id}-${chunk.chunk_index}`}
@@ -120,32 +132,38 @@ export function ChatWidget({ open, onToggle }: Props) {
                 >
                   <header>
                     [{chunk.cite_n}] {chunk.document_title}
-                    {chunk.cited ? " · in answer" : ""}
+                    {chunk.cited ? " · cited" : ""}
                   </header>
-                  <p>{chunk.text.slice(0, 220)}{chunk.text.length > 220 ? "…" : ""}</p>
+                  <p>
+                    {chunk.text.slice(0, 220)}
+                    {chunk.text.length > 220 ? "…" : ""}
+                  </p>
                 </article>
               ))}
             </aside>
           ) : null}
-          <div className="chat-suggestions">
-            {SUGGESTIONS.map((item) => (
-              <button
-                key={item}
-                type="button"
-                disabled={busy}
-                onClick={() => void sendMessage(item)}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
+          {turns.length === 0 ? (
+            <div className="chat-suggestions">
+              {SUGGESTIONS.map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void sendMessage(item)}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+          ) : null}
           <form className="chat-form" onSubmit={onSubmit}>
             <input
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
-              placeholder="Type your question…"
+              placeholder="Ask a question…"
               disabled={busy}
               maxLength={8000}
+              aria-label="Your question"
             />
             <button type="submit" disabled={busy || !draft.trim()}>
               Send
