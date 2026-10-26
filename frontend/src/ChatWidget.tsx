@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 
 import { streamChat } from "./api";
@@ -16,14 +16,44 @@ type Props = {
   onToggle: () => void;
 };
 
+function TypingIndicator() {
+  return (
+    <div className="msg-row bot" aria-live="polite" aria-label="Assistant is typing">
+      <span className="msg-avatar" aria-hidden="true">
+        AI
+      </span>
+      <div className="bubble bot typing">
+        <span className="typing-dots">
+          <i />
+          <i />
+          <i />
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export function ChatWidget({ open, onToggle }: Props) {
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [sources, setSources] = useState<RetrievedChunk[]>([]);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const messagesRef = useRef<HTMLDivElement>(null);
 
   const historyForApi = useMemo(() => turns.slice(-12), [turns]);
+
+  const awaitingReply =
+    busy &&
+    (turns.length === 0 || turns[turns.length - 1]?.role === "user");
+
+  useEffect(() => {
+    const node = messagesRef.current;
+    if (!node) {
+      return;
+    }
+    node.scrollTop = node.scrollHeight;
+  }, [turns, busy, sources, open]);
 
   async function sendMessage(text: string) {
     const cleaned = text.trim();
@@ -76,19 +106,22 @@ export function ChatWidget({ open, onToggle }: Props) {
           className="chat-fab"
           onClick={onToggle}
           aria-expanded={false}
-          aria-label="Open chat"
+          aria-label="Open chat with AI assistant"
         >
           <span className="chat-fab-icon" aria-hidden="true" />
-          <span className="chat-fab-label">Chat</span>
+          <span className="chat-fab-label">Ask AI</span>
         </button>
       ) : null}
       {open ? (
         <section className="chat-panel" aria-label="Website chat">
           <header className="chat-header">
+            <span className="chat-header-avatar" aria-hidden="true">
+              CP
+            </span>
             <div className="chat-header-text">
               <strong>Cape Town Physio</strong>
               <p className="chat-ai-label">AI assistant · not a live receptionist</p>
-              <p>Answers from our published fees, hours &amp; services only</p>
+              <p>Answers from published fees, hours &amp; services</p>
             </div>
             <button
               type="button"
@@ -99,29 +132,36 @@ export function ChatWidget({ open, onToggle }: Props) {
               ×
             </button>
           </header>
-          <div className="chat-messages">
+          <div className="chat-messages" ref={messagesRef}>
             {turns.length === 0 ? (
               <div className="chat-welcome">
                 <p>
                   You&apos;re chatting with an <strong>AI assistant</strong>, not a
-                  person. Ask about session fees, opening hours, or what we offer —
-                  we show which page each answer comes from.
+                  person. Ask about fees, hours, or services — each answer shows
+                  which page it came from.
                 </p>
               </div>
             ) : null}
             {turns.map((turn, index) => (
               <div
-                key={`${index}-${turn.role}`}
-                className={turn.role === "user" ? "bubble user" : "bubble bot"}
+                key={`${index}-${turn.role}-${turn.content.slice(0, 24)}`}
+                className={`msg-row ${turn.role === "user" ? "user" : "bot"}`}
               >
                 {turn.role === "assistant" ? (
-                  <ReactMarkdown>{turn.content}</ReactMarkdown>
-                ) : (
-                  turn.content
-                )}
+                  <span className="msg-avatar" aria-hidden="true">
+                    AI
+                  </span>
+                ) : null}
+                <div className={turn.role === "user" ? "bubble user" : "bubble bot"}>
+                  {turn.role === "assistant" ? (
+                    <ReactMarkdown>{turn.content}</ReactMarkdown>
+                  ) : (
+                    turn.content
+                  )}
+                </div>
               </div>
             ))}
-            {busy ? <p className="chat-status">Typing…</p> : null}
+            {awaitingReply ? <TypingIndicator /> : null}
             {error ? <p className="chat-error">{error}</p> : null}
           </div>
           {sources.length > 0 ? (
@@ -134,7 +174,7 @@ export function ChatWidget({ open, onToggle }: Props) {
                 >
                   <header>
                     [{chunk.cite_n}] {chunk.document_title}
-                    {chunk.cited ? " · cited" : ""}
+                    {chunk.cited ? " · cited in reply" : ""}
                   </header>
                   <p>
                     {chunk.text.slice(0, 220)}
@@ -144,18 +184,21 @@ export function ChatWidget({ open, onToggle }: Props) {
               ))}
             </aside>
           ) : null}
-          {turns.length === 0 ? (
+          {!busy && turns.length < 6 ? (
             <div className="chat-suggestions">
-              {SUGGESTIONS.map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  disabled={busy}
-                  onClick={() => void sendMessage(item)}
-                >
-                  {item}
-                </button>
-              ))}
+              <span className="chat-suggestions-label">Try asking</span>
+              <div className="chat-suggestions-chips">
+                {SUGGESTIONS.map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void sendMessage(item)}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
             </div>
           ) : null}
           <form className="chat-form" onSubmit={onSubmit}>
@@ -167,8 +210,8 @@ export function ChatWidget({ open, onToggle }: Props) {
               maxLength={8000}
               aria-label="Your question"
             />
-            <button type="submit" disabled={busy || !draft.trim()}>
-              Send
+            <button type="submit" disabled={busy || !draft.trim()} aria-label="Send">
+              ↑
             </button>
           </form>
         </section>

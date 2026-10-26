@@ -78,6 +78,23 @@ export function App() {
         </div>
       </section>
 
+      <div className="trust-bar">
+        <div className="wrap trust-bar-inner">
+          <div>
+            <strong>R650</strong>
+            <span>per standard session</span>
+          </div>
+          <div>
+            <strong>5 PM</strong>
+            <span>weekday closing time</span>
+          </div>
+          <div>
+            <strong>AI chat</strong>
+            <span>answers from this site only</span>
+          </div>
+        </div>
+      </div>
+
       <main id="main">
         <section className="wrap section" id="fees">
           <h2>Session fees</h2>
@@ -134,16 +151,31 @@ export function App() {
         </section>
 
         <section className="wrap section visit" id="visit">
-          <h2>Visit us</h2>
-          <p>
-            14 Long Street, Cape Town City Bowl
-            <br />
-            Reception: <a href="tel:+27210000000">021 000 0000</a>
-          </p>
-          <p className="fine">
-            Need fees, hours, or services? Use the chat — answers come from this
-            page, not guesswork.
-          </p>
+          <div className="visit-grid">
+            <div>
+              <h2>Visit us</h2>
+              <p>
+                14 Long Street, Cape Town City Bowl
+                <br />
+                Reception: <a href="tel:+27210000000">021 000 0000</a>
+              </p>
+              <p className="fine">
+                Prefer text? Open <strong>Ask AI</strong> — grounded in the fees,
+                hours, and services on this site.
+              </p>
+            </div>
+            <div className="visit-card">
+              <p className="visit-card-label">Today</p>
+              <p className="visit-card-hours">Mon–Fri · Closes 5:00 PM</p>
+              <button
+                type="button"
+                className="btn btn-primary visit-card-cta"
+                onClick={() => setChatOpen(true)}
+              >
+                Open chat
+              </button>
+            </div>
+          </div>
         </section>
       </main>
 
