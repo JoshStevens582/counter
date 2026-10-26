@@ -3,11 +3,11 @@
 Checklist for a public Counter demo (Custom Chat and Automation).
 
 1. [x] Code on GitHub; CI green (backend, frontend, docker build; optional full stack smoke when `OPENAI_API_KEY` repo secret is set).
-2. [ ] DNS `counter.customchatandautomation.co.za` → `102.203.81.249` (same A record pattern as `atlas` on [domains.co.za](https://www.domains.co.za)).
+2. [x] DNS `counter.customchatandautomation.co.za` → `102.203.81.249` (domains.co.za).
 3. [x] `/opt/counter` on the server: clone, `.env` with `OPENAI_API_KEY`, no CORS origins (same-origin via Caddy).
 4. [x] Docker network `cca-edge` created; Counter stack up (`container_name` `counter-api`, `counter-web`).
 5. [x] Atlas Caddy serves the Counter host (see [deploy/with-atlas-edge.md](../deploy/with-atlas-edge.md)); Atlas `web` on `cca-edge`.
-6. [ ] `https://counter.customchatandautomation.co.za` loads the demo site; chat returns cited answers (blocked until step 2).
+6. [x] `https://counter.customchatandautomation.co.za` loads the demo site; chat returns cited answers.
 7. [ ] OpenAI dashboard hard spend cap set for the deploy key (operator check).
 8. [ ] Vault session note + January Launch List §2 ticked (after step 6).
 
