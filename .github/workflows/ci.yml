@@ -40,17 +40,31 @@ jobs:
         run: |
           echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" > .env
           echo "RATE_LIMIT_ENABLED=false" >> .env
+      - name: Build images
+        run: docker compose build
       - name: Create edge network (production uses external cca-edge)
+        if: env.OPENAI_API_KEY != ''
         run: docker network create cca-edge
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       - name: Build and start stack
-        run: docker compose up -d --build --wait --wait-timeout 240
+        if: env.OPENAI_API_KEY != ''
+        run: |
+          docker compose -f docker-compose.yml -f deploy/compose.ci.yml up -d --wait --wait-timeout 300
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       - name: Health through web proxy
+        if: env.OPENAI_API_KEY != ''
         run: |
           curl -fsS http://localhost:8080/api/live
           curl -fsS http://localhost:8080/api/health
           curl -fsS http://localhost:8080/ | grep -q 'id="root"'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      - name: Skip stack smoke (no OPENAI_API_KEY secret)
+        if: env.OPENAI_API_KEY == ''
+        run: |
+          echo "::notice::Docker images built. Add repo secret OPENAI_API_KEY for full compose smoke test."
       - name: Show logs on failure
         if: failure()
         run: docker compose logs --no-color
