@@ -87,7 +87,8 @@ export function ChatWidget({ open, onToggle }: Props) {
           <header className="chat-header">
             <div className="chat-header-text">
               <strong>Cape Town Physio</strong>
-              <p>Answers from our published fees, hours &amp; services</p>
+              <p className="chat-ai-label">AI assistant · not a live receptionist</p>
+              <p>Answers from our published fees, hours &amp; services only</p>
             </div>
             <button
               type="button"
@@ -102,8 +103,9 @@ export function ChatWidget({ open, onToggle }: Props) {
             {turns.length === 0 ? (
               <div className="chat-welcome">
                 <p>
-                  Hi — ask about session fees, opening hours, or what we offer.
-                  We show which page each answer comes from.
+                  You&apos;re chatting with an <strong>AI assistant</strong>, not a
+                  person. Ask about session fees, opening hours, or what we offer —
+                  we show which page each answer comes from.
                 </p>
               </div>
             ) : null}

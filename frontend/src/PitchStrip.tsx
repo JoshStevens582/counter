@@ -38,8 +38,8 @@ export function PitchStrip() {
           ))}
         </ol>
         <p className="pitch-foot">
-          Does not book or send mail. If the pages do not say it, Counter says it does
-          not know.{" "}
+          Visitors see that they are speaking with AI, not staff. Does not book or
+          send mail. If the pages do not say it, Counter says it does not know.{" "}
           <a href="https://github.com/JoshStevens582/counter" target="_blank" rel="noreferrer">
             Code on GitHub
           </a>

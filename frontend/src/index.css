@@ -680,6 +680,11 @@ a {
   opacity: 0.92;
 }
 
+.chat-ai-label {
+  font-weight: 600;
+  opacity: 1;
+}
+
 .chat-close {
   border: 0;
   background: rgb(255 255 255 / 15%);
