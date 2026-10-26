@@ -62,7 +62,7 @@ services:
 networks:
   cca-edge:
     name: cca-edge
-    driver: bridge
+    external: true
 
 volumes:
   counter-data:
