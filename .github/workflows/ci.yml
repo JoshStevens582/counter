@@ -40,6 +40,8 @@ jobs:
         run: |
           echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" > .env
           echo "RATE_LIMIT_ENABLED=false" >> .env
+      - name: Create edge network (production uses external cca-edge)
+        run: docker network create cca-edge
       - name: Build and start stack
         run: docker compose up -d --build --wait --wait-timeout 240
         env:
