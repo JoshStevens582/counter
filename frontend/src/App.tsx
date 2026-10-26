@@ -2,8 +2,6 @@ import { useState } from "react";
 
 import { ChatWidget } from "./ChatWidget";
 import { HeroPreview } from "./HeroPreview";
-import { PitchBanner } from "./PitchBanner";
-import { PitchStrip } from "./PitchStrip";
 
 const NAV = [
   { href: "#fees", label: "Fees" },
@@ -20,7 +18,6 @@ export function App() {
       <a className="skip-link" href="#main">
         Skip to content
       </a>
-      <PitchBanner />
       <header className="topbar">
         <div className="wrap topbar-inner">
           <a className="brand" href="#top">
@@ -89,8 +86,8 @@ export function App() {
             <span>weekday closing time</span>
           </div>
           <div>
-            <strong>AI chat</strong>
-            <span>answers from this site only</span>
+            <strong>Ask us</strong>
+            <span>chat on this site</span>
           </div>
         </div>
       </div>
@@ -179,21 +176,13 @@ export function App() {
         </section>
       </main>
 
-      <PitchStrip />
-
       <footer className="site-footer">
         <div className="wrap footer-inner">
-          <p>© {new Date().getFullYear()} Cape Town Physio</p>
+          <p>© {new Date().getFullYear()} Cape Town Physio · City Bowl</p>
           <p className="fine">
-            Sample site for{" "}
-            <a
-              href="https://customchatandautomation.co.za"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Custom Chat &amp; Automation
-            </a>{" "}
-            — Counter website chat
+            <a href="#visit">Contact</a>
+            {" · "}
+            Session fees and hours published on this site.
           </p>
         </div>
       </footer>
