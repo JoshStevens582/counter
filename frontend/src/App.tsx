@@ -157,8 +157,8 @@ export function App() {
                 Reception: <a href="tel:+27210000000">021 000 0000</a>
               </p>
               <p className="fine">
-                Prefer text? Open <strong>Ask AI</strong> — grounded in the fees,
-                hours, and services on this site.
+                Prefer text? Open <strong>Ask AI</strong>. Replies come from the
+                fees, hours, and services on this site.
               </p>
             </div>
             <div className="visit-card">

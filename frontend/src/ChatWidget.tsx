@@ -137,7 +137,7 @@ export function ChatWidget({ open, onToggle }: Props) {
               <div className="chat-welcome">
                 <p>
                   You&apos;re chatting with an <strong>AI assistant</strong>, not a
-                  person. Ask about fees, hours, or services — each answer shows
+                  person. Ask about fees, hours, or services. Each answer shows
                   which page it came from.
                 </p>
               </div>
