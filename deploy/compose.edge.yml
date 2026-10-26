@@ -1,0 +1,4 @@
+# Production on the Atlas VPS: Counter web is reached via Atlas Caddy, not host ports.
+services:
+  web:
+    ports: []

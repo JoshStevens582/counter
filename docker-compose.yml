@@ -1,0 +1,71 @@
+# Counter on one server: web (Caddy + React) -> api -> redis.
+# Local smoke test: ports 8080/8443 on web.
+# Production on the Atlas VPS: use deploy/with-atlas-edge.md — no host ports on web.
+services:
+  api:
+    build: .
+    container_name: counter-api
+    mem_limit: 1536m
+    env_file: .env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      REDIS_REQUIRED: "true"
+      RATE_LIMIT_ENABLED: "true"
+      CORS_ORIGINS: ""
+    volumes:
+      - counter-data:/app/data
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - default
+      - cca-edge
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    mem_limit: 256m
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - default
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.web
+    container_name: counter-web
+    mem_limit: 256m
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    ports:
+      - "8080:80"
+      - "8443:443"
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - default
+      - cca-edge
+    restart: unless-stopped
+
+networks:
+  cca-edge:
+    name: cca-edge
+    driver: bridge
+
+volumes:
+  counter-data:
+  redis-data:
+  caddy-data:
+  caddy-config:
