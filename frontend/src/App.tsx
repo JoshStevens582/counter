@@ -36,6 +36,7 @@ export function App() {
 
   const appClass = [
     "app",
+    "app--counter",
     sourcesCollapsed ? "app--sent-collapsed" : "",
     `app--mobile-${mobilePane}`,
   ]
@@ -70,10 +71,17 @@ export function App() {
       </nav>
       <aside className="panel sidebar">
         <div className="brand">
-          <strong>COUNTER</strong>
-          <span>Customer chat from your pages</span>
+          <img src="/brand/counter-mark.svg" alt="" className="brand-mark" width={40} height={40} />
+          <div className="brand-text">
+            <strong>COUNTER</strong>
+            <span>Website chat grounded in your published pages</span>
+          </div>
         </div>
-        <p className="workspace-name">Cape Town Physio</p>
+        <p className="product-audience">For visitors · no login</p>
+        <p className="workspace-name">Demo clinic: Cape Town Physio</p>
+        <p className="product-one-liner">
+          Not Atlas (staff handbook) or Clerk (inbox desk) — this is the public chat on your site.
+        </p>
         <div className="health">
           <span
             className={`pill ${health === null ? "" : health.openai_configured ? "ok" : "warn"}`}
@@ -111,20 +119,26 @@ export function App() {
           ))}
         </div>
         <p className="suite-links">
+          <span className="suite-links-lead">Other products</span>
           <a href="https://atlas.customchatandautomation.co.za" target="_blank" rel="noreferrer">
             Atlas
           </a>
+          <span className="suite-muted"> staff handbook</span>
           {" · "}
           <a href="https://agent.customchatandautomation.co.za" target="_blank" rel="noreferrer">
             Clerk
           </a>
+          <span className="suite-muted"> inbox desk</span>
         </p>
       </aside>
 
       <main className="panel main">
         <header className="chat-header">
-          <h1>Cape Town Physio</h1>
-          <p>City Bowl · grounded answers with page citations</p>
+          <h1>Website chat</h1>
+          <p>
+            Cape Town Physio demo · visitors ask about fees, hours, and services — answers cite the
+            page they came from.
+          </p>
           <div className="pipeline">
             <div className="step active">
               <b>1. Ask</b>
