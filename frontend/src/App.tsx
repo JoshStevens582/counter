@@ -1,193 +1,151 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
+import { fetchHealth, type HealthStatus } from "./api";
 import { ChatWidget } from "./ChatWidget";
-import { HeroPreview } from "./HeroPreview";
+import type { RetrievedChunk } from "./types";
 
-const NAV = [
-  { href: "#fees", label: "Fees" },
-  { href: "#hours", label: "Hours" },
-  { href: "#services", label: "Services" },
-  { href: "#visit", label: "Visit us" },
+const PUBLISHED = [
+  {
+    title: "Session fees",
+    body: "Standard one-on-one session R650. Initial assessment R650 for 45 minutes.",
+  },
+  {
+    title: "Opening hours",
+    body: "Monday–Friday, closing at 5:00 PM. Closed weekends and public holidays.",
+  },
+  {
+    title: "Services",
+    body: "Sports rehab, post-op, neck/back/shoulder, dry needling, home exercise programmes.",
+  },
 ];
 
 export function App() {
-  const [chatOpen, setChatOpen] = useState(false);
+  const [health, setHealth] = useState<HealthStatus | null>(null);
+  const [sources, setSources] = useState<RetrievedChunk[]>([]);
+  const [injectMessage, setInjectMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchHealth()
+      .then(setHealth)
+      .catch(() => setHealth(null));
+  }, []);
 
   return (
-    <div className="site">
-      <a className="skip-link" href="#main">
-        Skip to content
-      </a>
-      <header className="topbar">
-        <div className="wrap topbar-inner">
-          <a className="brand" href="#top">
-            <span className="brand-mark" aria-hidden="true" />
-            <span>
-              <strong>Cape Town Physio</strong>
-              <span className="brand-tag">City Bowl</span>
-            </span>
-          </a>
-          <nav className="nav" aria-label="Primary">
-            {NAV.map((item) => (
-              <a key={item.href} href={item.href}>
-                {item.label}
-              </a>
-            ))}
-          </nav>
-          <button
-            type="button"
-            className="nav-chat"
-            onClick={() => setChatOpen(true)}
+    <div className="app">
+      <aside className="panel sidebar">
+        <div className="brand">
+          <strong>COUNTER</strong>
+          <span>Customer chat from your pages</span>
+        </div>
+        <p className="workspace-name">Cape Town Physio</p>
+        <div className="health">
+          <span
+            className={`pill ${health === null ? "" : health.openai_configured ? "ok" : "warn"}`}
           >
-            Questions?
-          </button>
+            {health === null
+              ? "Checking…"
+              : health.openai_configured
+                ? "OpenAI ready"
+                : "API key missing"}
+          </span>
+          <span className="pill ok">{health?.page_count ?? "—"} pages</span>
+          <span className="pill">{health?.chunk_count ?? "—"} chunks</span>
         </div>
-      </header>
+        <p className="section-label">Try asking</p>
+        <div className="stack">
+          {[
+            "What does a session cost?",
+            "What time do you close?",
+            "Do you treat sports injuries?",
+          ].map((question) => (
+            <button
+              key={question}
+              type="button"
+              className="row"
+              onClick={() => setInjectMessage(question)}
+            >
+              <span>
+                {question}
+                <small>Send to chat</small>
+              </span>
+            </button>
+          ))}
+        </div>
+        <p className="suite-links">
+          <a href="https://atlas.customchatandautomation.co.za" target="_blank" rel="noreferrer">
+            Atlas
+          </a>
+          {" · "}
+          <a href="https://agent.customchatandautomation.co.za" target="_blank" rel="noreferrer">
+            Clerk
+          </a>
+        </p>
+      </aside>
 
-      <section className="hero" id="top">
-        <div className="wrap hero-grid">
-          <div className="hero-copy">
-            <p className="hero-kicker">Physiotherapy · Sports · Rehab</p>
-            <h1>Move better. Recover with a team that knows your schedule.</h1>
-            <p className="hero-lede">
-              One-on-one sessions in the City Bowl. Clear fees, evening-friendly
-              hours, and treatment plans built around your goals.
-            </p>
-            <div className="hero-actions">
-              <a className="btn btn-primary" href="#visit">
-                Find us
-              </a>
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={() => setChatOpen(true)}
-              >
-                Ask about fees &amp; hours
-              </button>
+      <main className="panel main">
+        <header className="chat-header">
+          <h1>Cape Town Physio</h1>
+          <p>City Bowl · grounded answers with page citations</p>
+          <div className="pipeline">
+            <div className="step active">
+              <b>1. Ask</b>
+              Patient or visitor question
             </div>
-            <ul className="hero-trust">
-              <li>Card &amp; EFT</li>
-              <li>45-min initial assessment</li>
-              <li>Sports &amp; post-op rehab</li>
-            </ul>
-          </div>
-          <HeroPreview />
-        </div>
-      </section>
-
-      <div className="trust-bar">
-        <div className="wrap trust-bar-inner">
-          <div>
-            <strong>R650</strong>
-            <span>per standard session</span>
-          </div>
-          <div>
-            <strong>5 PM</strong>
-            <span>weekday closing time</span>
-          </div>
-          <div>
-            <strong>Ask us</strong>
-            <span>chat on this site</span>
-          </div>
-        </div>
-      </div>
-
-      <main id="main">
-        <section className="wrap section" id="fees">
-          <h2>Session fees</h2>
-          <p className="section-intro">
-            Transparent pricing before you arrive. Medical-aid codes are handled at
-            reception.
-          </p>
-          <div className="card-grid">
-            <article className="card card-featured">
-              <p className="card-label">Standard session</p>
-              <p className="card-price">
-                R650 <span>/ visit</span>
-              </p>
-              <p>One-on-one physiotherapy with your treating therapist.</p>
-            </article>
-            <article className="card">
-              <p className="card-label">Initial assessment</p>
-              <p className="card-price">
-                R650 <span>/ 45 min</span>
-              </p>
-              <p>Full assessment and plan for new patients.</p>
-            </article>
-          </div>
-        </section>
-
-        <section className="wrap section section-muted" id="hours">
-          <h2>Opening hours</h2>
-          <div className="hours-block">
-            <p>
-              <strong>Monday – Friday</strong>
-              <br />
-              Open during the day, <strong>closing at 5:00 PM</strong>
-            </p>
-            <p className="hours-note">Closed weekends and public holidays.</p>
-          </div>
-        </section>
-
-        <section className="wrap section" id="services">
-          <h2>What we treat</h2>
-          <ul className="service-list">
-            <li>
-              <strong>Sports injury rehabilitation</strong>
-              <span>Return-to-play plans and load management.</span>
-            </li>
-            <li>
-              <strong>Neck, back &amp; shoulder</strong>
-              <span>Hands-on care and home exercise programs.</span>
-            </li>
-            <li>
-              <strong>Post-operative physiotherapy</strong>
-              <span>Structured rehab after surgery.</span>
-            </li>
-          </ul>
-        </section>
-
-        <section className="wrap section visit" id="visit">
-          <div className="visit-grid">
-            <div>
-              <h2>Visit us</h2>
-              <p>
-                14 Long Street, Cape Town City Bowl
-                <br />
-                Reception: <a href="tel:+27210000000">021 000 0000</a>
-              </p>
-              <p className="fine">
-                Prefer text? Open <strong>Ask AI</strong>. Replies come from the
-                fees, hours, and services on this site.
-              </p>
+            <div className="step active">
+              <b>2. Retrieve</b>
+              Fees, hours, services
             </div>
-            <div className="visit-card">
-              <p className="visit-card-label">Today</p>
-              <p className="visit-card-hours">Mon–Fri · Closes 5:00 PM</p>
-              <button
-                type="button"
-                className="btn btn-primary visit-card-cta"
-                onClick={() => setChatOpen(true)}
-              >
-                Open chat
-              </button>
+            <div className="step">
+              <b>3. Cite</b>
+              Sources on the right
             </div>
           </div>
-        </section>
+        </header>
+        <ChatWidget
+          embedded
+          open
+          onToggle={() => undefined}
+          onSourcesChange={setSources}
+          injectMessage={injectMessage}
+          onInjectConsumed={() => setInjectMessage(null)}
+        />
       </main>
 
-      <footer className="site-footer">
-        <div className="wrap footer-inner">
-          <p>© {new Date().getFullYear()} Cape Town Physio · City Bowl</p>
-          <p className="fine">
-            <a href="#visit">Contact</a>
-            {" · "}
-            Session fees and hours published on this site.
-          </p>
-        </div>
-      </footer>
-
-      <ChatWidget open={chatOpen} onToggle={() => setChatOpen((value) => !value)} />
+      <aside className="panel sources">
+        <p className="section-label">Sources for this reply</p>
+        {sources.length === 0 ? (
+          <p className="muted-copy">Chunks used in the answer appear here.</p>
+        ) : (
+          <div className="stack">
+            {sources.map((chunk) => (
+              <div
+                key={`${chunk.document_id}-${chunk.chunk_index}`}
+                className={`source-card ${chunk.cited ? "" : "unused"}`}
+              >
+                <header>
+                  <strong>
+                    [{chunk.cite_n}] {chunk.document_title}
+                  </strong>
+                  <span className="score">{chunk.distance.toFixed(3)}</span>
+                </header>
+                <p>
+                  {chunk.text.slice(0, 220)}
+                  {chunk.text.length > 220 ? "…" : ""}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+        <p className="section-label">Published on this site</p>
+        {PUBLISHED.map((page) => (
+          <div key={page.title} className="source-card">
+            <header>
+              <strong>{page.title}</strong>
+            </header>
+            <p>{page.body}</p>
+          </div>
+        ))}
+      </aside>
     </div>
   );
 }

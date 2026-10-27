@@ -1,5 +1,21 @@
 import type { ChatTurn, StreamEvent } from "./types";
 
+export type HealthStatus = {
+  status: string;
+  openai_configured: boolean;
+  vector_store: string;
+  page_count: number;
+  chunk_count: number;
+};
+
+export async function fetchHealth(): Promise<HealthStatus> {
+  const response = await fetch("/api/health");
+  if (!response.ok) {
+    throw new Error("Health check failed");
+  }
+  return (await response.json()) as HealthStatus;
+}
+
 export async function streamChat(
   message: string,
   history: ChatTurn[],

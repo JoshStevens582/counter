@@ -12,8 +12,12 @@ const SUGGESTIONS = [
 ];
 
 type Props = {
+  embedded?: boolean;
   open: boolean;
   onToggle: () => void;
+  onSourcesChange?: (sources: RetrievedChunk[]) => void;
+  injectMessage?: string | null;
+  onInjectConsumed?: () => void;
 };
 
 function TypingIndicator() {
@@ -22,7 +26,7 @@ function TypingIndicator() {
       <span className="msg-avatar" aria-hidden="true">
         AI
       </span>
-      <div className="bubble bot typing">
+      <div className="bubble assistant typing">
         <span className="typing-dots">
           <i />
           <i />
@@ -33,7 +37,14 @@ function TypingIndicator() {
   );
 }
 
-export function ChatWidget({ open, onToggle }: Props) {
+export function ChatWidget({
+  embedded = false,
+  open,
+  onToggle,
+  onSourcesChange,
+  injectMessage,
+  onInjectConsumed,
+}: Props) {
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [sources, setSources] = useState<RetrievedChunk[]>([]);
   const [draft, setDraft] = useState("");
@@ -44,8 +55,11 @@ export function ChatWidget({ open, onToggle }: Props) {
   const historyForApi = useMemo(() => turns.slice(-12), [turns]);
 
   const awaitingReply =
-    busy &&
-    (turns.length === 0 || turns[turns.length - 1]?.role === "user");
+    busy && (turns.length === 0 || turns[turns.length - 1]?.role === "user");
+
+  useEffect(() => {
+    onSourcesChange?.(sources);
+  }, [sources, onSourcesChange]);
 
   useEffect(() => {
     const node = messagesRef.current;
@@ -54,6 +68,14 @@ export function ChatWidget({ open, onToggle }: Props) {
     }
     node.scrollTop = node.scrollHeight;
   }, [turns, busy, sources, open]);
+
+  useEffect(() => {
+    if (!injectMessage?.trim()) {
+      return;
+    }
+    void sendMessage(injectMessage);
+    onInjectConsumed?.();
+  }, [injectMessage]);
 
   async function sendMessage(text: string) {
     const cleaned = text.trim();
@@ -98,124 +120,91 @@ export function ChatWidget({ open, onToggle }: Props) {
     void sendMessage(draft);
   }
 
+  if (!embedded && !open) {
+    return (
+      <button
+        type="button"
+        className="chat-fab"
+        onClick={onToggle}
+        aria-expanded={false}
+        aria-label="Open chat"
+      >
+        Ask
+      </button>
+    );
+  }
+
+  const panelClass = embedded ? "chat-embedded" : "chat-panel";
+
   return (
-    <>
-      {!open ? (
-        <button
-          type="button"
-          className="chat-fab"
-          onClick={onToggle}
-          aria-expanded={false}
-          aria-label="Open chat with AI assistant"
-        >
-          <span className="chat-fab-icon" aria-hidden="true" />
-          <span className="chat-fab-label">Ask AI</span>
+    <section className={panelClass} aria-label="Customer chat">
+      {!embedded ? (
+        <button type="button" className="chat-close" onClick={onToggle} aria-label="Close chat">
+          ×
         </button>
       ) : null}
-      {open ? (
-        <section className="chat-panel" aria-label="Website chat">
-          <header className="chat-header">
-            <span className="chat-header-avatar" aria-hidden="true">
-              CP
-            </span>
-            <div className="chat-header-text">
-              <strong>Cape Town Physio</strong>
-              <p className="chat-ai-label">AI assistant · not a live receptionist</p>
-              <p>Answers from published fees, hours &amp; services</p>
-            </div>
-            <button
-              type="button"
-              className="chat-close"
-              onClick={onToggle}
-              aria-label="Close chat"
-            >
-              ×
-            </button>
-          </header>
-          <div className="chat-messages" ref={messagesRef}>
-            {turns.length === 0 ? (
-              <div className="chat-welcome">
-                <p>
-                  You&apos;re chatting with an <strong>AI assistant</strong>, not a
-                  person. Ask about fees, hours, or services. Each answer shows
-                  which page it came from.
-                </p>
-              </div>
-            ) : null}
-            {turns.map((turn, index) => (
-              <div
-                key={`${index}-${turn.role}-${turn.content.slice(0, 24)}`}
-                className={`msg-row ${turn.role === "user" ? "user" : "bot"}`}
-              >
-                {turn.role === "assistant" ? (
-                  <span className="msg-avatar" aria-hidden="true">
-                    AI
-                  </span>
-                ) : null}
-                <div className={turn.role === "user" ? "bubble user" : "bubble bot"}>
-                  {turn.role === "assistant" ? (
-                    <ReactMarkdown>{turn.content}</ReactMarkdown>
-                  ) : (
-                    turn.content
-                  )}
-                </div>
-              </div>
-            ))}
-            {awaitingReply ? <TypingIndicator /> : null}
-            {error ? <p className="chat-error">{error}</p> : null}
+      <div className="workspace-body chat-body">
+        {turns.length === 0 ? (
+          <div className="empty">
+            <p>
+              Ask about <strong>fees</strong>, <strong>hours</strong>, or{" "}
+              <strong>services</strong>. Answers cite the published pages — Counter does not
+              book or send mail.
+            </p>
           </div>
-          {sources.length > 0 ? (
-            <aside className="chat-sources">
-              <h3>Source on this site</h3>
-              {sources.map((chunk) => (
-                <article
-                  key={`${chunk.document_id}-${chunk.chunk_index}`}
-                  className={chunk.cited ? "source cited" : "source"}
-                >
-                  <header>
-                    [{chunk.cite_n}] {chunk.document_title}
-                    {chunk.cited ? " · cited in reply" : ""}
-                  </header>
-                  <p>
-                    {chunk.text.slice(0, 220)}
-                    {chunk.text.length > 220 ? "…" : ""}
-                  </p>
-                </article>
-              ))}
-            </aside>
-          ) : null}
-          {!busy && turns.length < 6 ? (
-            <div className="chat-suggestions">
-              <span className="chat-suggestions-label">Try asking</span>
-              <div className="chat-suggestions-chips">
-                {SUGGESTIONS.map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    disabled={busy}
-                    onClick={() => void sendMessage(item)}
-                  >
-                    {item}
-                  </button>
-                ))}
-              </div>
+        ) : null}
+        {turns.map((turn, index) => (
+          <div
+            key={`${index}-${turn.role}-${turn.content.slice(0, 24)}`}
+            className={`msg-row ${turn.role === "user" ? "user" : "bot"}`}
+          >
+            {turn.role === "assistant" ? (
+              <span className="msg-avatar" aria-hidden="true">
+                AI
+              </span>
+            ) : null}
+            <div className={turn.role === "user" ? "bubble user" : "bubble assistant"}>
+              {turn.role === "assistant" ? (
+                <ReactMarkdown>{turn.content}</ReactMarkdown>
+              ) : (
+                turn.content
+              )}
             </div>
-          ) : null}
-          <form className="chat-form" onSubmit={onSubmit}>
-            <input
-              value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-              placeholder="Ask a question…"
+          </div>
+        ))}
+        {awaitingReply ? <TypingIndicator /> : null}
+        {error ? <p className="error banner">{error}</p> : null}
+      </div>
+      {!busy && turns.length < 6 ? (
+        <div className="prompts">
+          {SUGGESTIONS.map((item) => (
+            <button
+              key={item}
+              type="button"
+              className="prompt"
               disabled={busy}
-              maxLength={8000}
-              aria-label="Your question"
-            />
-            <button type="submit" disabled={busy || !draft.trim()} aria-label="Send">
-              ↑
+              onClick={() => void sendMessage(item)}
+            >
+              {item}
+              <span>From your site pages</span>
             </button>
-          </form>
-        </section>
+          ))}
+        </div>
       ) : null}
-    </>
+      <form className="composer" onSubmit={onSubmit}>
+        <textarea
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          placeholder="Ask a question…"
+          disabled={busy}
+          maxLength={8000}
+          aria-label="Your question"
+          rows={2}
+        />
+        <button type="submit" className="send" disabled={busy || !draft.trim()}>
+          Send
+        </button>
+      </form>
+    </section>
   );
 }
