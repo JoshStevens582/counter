@@ -1,0 +1,3 @@
+# Product demo — not a standalone business site. Main site: customchatandautomation.co.za
+User-agent: *
+Allow: /
