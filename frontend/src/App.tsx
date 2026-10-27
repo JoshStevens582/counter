@@ -19,10 +19,14 @@ const PUBLISHED = [
   },
 ];
 
+type MobilePane = "inbox" | "desk" | "sent";
+
 export function App() {
   const [health, setHealth] = useState<HealthStatus | null>(null);
   const [sources, setSources] = useState<RetrievedChunk[]>([]);
   const [injectMessage, setInjectMessage] = useState<string | null>(null);
+  const [mobilePane, setMobilePane] = useState<MobilePane>("desk");
+  const [sourcesCollapsed, setSourcesCollapsed] = useState(false);
 
   useEffect(() => {
     fetchHealth()
@@ -30,8 +34,40 @@ export function App() {
       .catch(() => setHealth(null));
   }, []);
 
+  const appClass = [
+    "app",
+    sourcesCollapsed ? "app--sent-collapsed" : "",
+    `app--mobile-${mobilePane}`,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <div className="app">
+    <div className={appClass}>
+      <nav className="mobile-pane-tabs" aria-label="Workspace sections">
+        <button
+          type="button"
+          className={mobilePane === "inbox" ? "active" : ""}
+          onClick={() => setMobilePane("inbox")}
+        >
+          Try
+        </button>
+        <button
+          type="button"
+          className={mobilePane === "desk" ? "active" : ""}
+          onClick={() => setMobilePane("desk")}
+        >
+          Chat
+        </button>
+        <button
+          type="button"
+          className={mobilePane === "sent" ? "active" : ""}
+          onClick={() => setMobilePane("sent")}
+        >
+          Sources
+          {sources.length > 0 ? ` (${sources.length})` : ""}
+        </button>
+      </nav>
       <aside className="panel sidebar">
         <div className="brand">
           <strong>COUNTER</strong>
@@ -62,7 +98,10 @@ export function App() {
               key={question}
               type="button"
               className="row"
-              onClick={() => setInjectMessage(question)}
+              onClick={() => {
+                setInjectMessage(question);
+                setMobilePane("desk");
+              }}
             >
               <span>
                 {question}
@@ -112,7 +151,18 @@ export function App() {
       </main>
 
       <aside className="panel sources">
-        <p className="section-label">Sources for this reply</p>
+        <div className="pane-head">
+          <p className="section-label">Sources for this reply</p>
+          <button
+            type="button"
+            className="pane-collapse"
+            aria-label={sourcesCollapsed ? "Show sources panel" : "Hide sources panel"}
+            aria-expanded={!sourcesCollapsed}
+            onClick={() => setSourcesCollapsed((open) => !open)}
+          >
+            {sourcesCollapsed ? "Show" : "Hide"}
+          </button>
+        </div>
         {sources.length === 0 ? (
           <p className="muted-copy">Chunks used in the answer appear here.</p>
         ) : (
