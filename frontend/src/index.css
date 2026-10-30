@@ -159,3 +159,23 @@
 .bubble.assistant p:last-child {
   margin-bottom: 0;
 }
+
+@media (max-width: 900px) {
+  .prompts,
+  .composer {
+    grid-template-columns: 1fr;
+  }
+
+  .composer .send,
+  .chat-fab {
+    min-height: 44px;
+  }
+
+  .chat-panel {
+    right: 0.75rem;
+    left: 0.75rem;
+    bottom: 0.75rem;
+    width: auto;
+    max-height: min(78vh, 680px);
+  }
+}
